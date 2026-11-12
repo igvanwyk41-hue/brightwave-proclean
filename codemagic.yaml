@@ -1,0 +1,23 @@
+workflows:
+  brightwave-android:
+    name: Brightwave Proclean Android
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      vars:
+        PACKAGE_NAME: "za.co.brightwave.proclean"
+    scripts:
+      - name: Set Android SDK location
+        script: echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+      - name: Install Gradle 8.7
+        script: |
+          if ! command -v gradle >/dev/null 2>&1 || [ "$(gradle --version | grep -o 'Gradle [0-9.]*' | head -1)" != "Gradle 8.7" ]; then
+            curl -s "https://get.sdkman.io" | bash
+            source "$HOME/.sdkman/bin/sdkman-init.sh"
+            sdk install gradle 8.7
+          fi
+      - name: Build Brightwave debug APK
+        script: gradle assembleDebug
+    artifacts:
+      - app/build/outputs/**/*.apk
+      - app/build/outputs/**/*.aab
